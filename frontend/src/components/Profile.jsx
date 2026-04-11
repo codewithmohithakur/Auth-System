@@ -62,6 +62,9 @@ function Profile({ token, onLogout }) {
             <div style={styles.profileData}>
               <h3>Profile Information</h3>
               <p>
+                <strong>Name:</strong> {profileData.name}
+              </p>
+              <p>
                 <strong>Email:</strong> {profileData.email}
               </p>
             </div>
