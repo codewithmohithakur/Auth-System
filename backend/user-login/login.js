@@ -3,10 +3,23 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const router = express.Router();
 const { User } = require("../utility/database");
-
+const sgMail = require('@sendgrid/mail');
 const SECRET = process.env.JWT_SECRET || "mysecretkey";
 
-// ✅ REGISTER
+const sendGridApiKey = process.env.SENDGRID_API_KEY;
+const sendGridSender = process.env.SENDGRID_SENDER || 'nietclg@gmail.com';
+
+if (sendGridApiKey) {
+  sgMail.setApiKey(sendGridApiKey);
+} else {
+  console.warn('Warning: SENDGRID_API_KEY is not set. Email delivery will fail.');
+}
+
+if (!process.env.SENDGRID_SENDER) {
+  console.warn('Warning: SENDGRID_SENDER is not set. Use a verified sender identity in SendGrid.');
+}
+
+// REGISTER API
 router.post("/register", async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -33,6 +46,21 @@ router.post("/register", async (req, res) => {
 
     await newUser.save();
 
+    try {
+      if (sendGridApiKey) {
+        await sgMail.send({
+          to: email,
+          from: sendGridSender,
+          subject: 'Welcome to authentication app',
+          html: `<h4> Welcome to authentication app, ${name}</h4>`,
+        });
+      } else {
+        console.warn('SENDGRID_API_KEY is not configured.');
+      }
+    } catch (emailErr) {
+      console.error('SendGrid email error:', emailErr);
+    }
+
     res.status(201).json({ message: "Registered successfully" });
 
   } catch (err) {
@@ -41,7 +69,7 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// ✅ LOGIN
+// LOGIN API
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -85,7 +113,7 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// ✅ PROTECTED ROUTE - GET PROFILE
+// GET PROFILE API
 router.get("/profile", async (req, res) => {
   try {
     const token = req.headers.authorization;
