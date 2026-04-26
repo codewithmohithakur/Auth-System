@@ -1,11 +1,15 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 
-function Login({ onLoginSuccess }) {
+function ResetPassword() {
   const [form, setForm] = useState({
     email: "",
-    password: ""
+    password: "",
+    confirmPassword: ""
   });
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -15,14 +19,24 @@ function Login({ onLoginSuccess }) {
     });
   };
 
-  const login = async () => {
-    if (!form.email || !form.password) {
-      alert("Email and password are required");
+  const resetPassword = async () => {
+    setError("");
+    setMessage("");
+
+    if (!form.email || !form.password || !form.confirmPassword) {
+      setError("Email and both password fields are required.");
       return;
     }
 
+    if (form.password !== form.confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    setLoading(true);
+
     try {
-      const res = await fetch("http://localhost:3000/login", {
+      const res = await fetch("http://localhost:3000/reset-password", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -35,23 +49,26 @@ function Login({ onLoginSuccess }) {
 
       const data = await res.json();
 
-      if (data.token) {
-        localStorage.setItem("token", data.token);
-        setForm({ email: "", password: "" });
-        onLoginSuccess(data.token);
-        navigate("/profile");
+      if (res.ok) {
+        setMessage("Password reset successfully. Redirecting to login...");
+        setForm({ email: "", password: "", confirmPassword: "" });
+        setTimeout(() => navigate("/login"), 1200);
       } else {
-        alert(data.message);
+        setError(data.message || "Unable to reset password. Please try again.");
       }
     } catch (err) {
-      alert("Error: " + err.message);
+      setError("Error: " + err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div style={styles.container}>
       <div style={styles.form}>
-        <h2>Login</h2>
+        <h2>Reset Password</h2>
+        {error && <div style={styles.alert}>{error}</div>}
+        {message && <div style={styles.success}>{message}</div>}
         <input
           type="email"
           name="email"
@@ -63,24 +80,24 @@ function Login({ onLoginSuccess }) {
         <input
           type="password"
           name="password"
-          placeholder="Password"
+          placeholder="New password"
           value={form.password}
           onChange={handleChange}
           style={styles.input}
         />
-        <button onClick={login} style={styles.submitButton}>
-          Login
+        <input
+          type="password"
+          name="confirmPassword"
+          placeholder="Confirm password"
+          value={form.confirmPassword}
+          onChange={handleChange}
+          style={styles.input}
+        />
+        <button onClick={resetPassword} style={styles.submitButton} disabled={loading}>
+          {loading ? "Resetting..." : "Reset Password"}
         </button>
         <p style={styles.switchText}>
-          <Link to="/reset-password" style={styles.link}>
-            Reset password
-          </Link>
-        </p>
-        <p style={styles.switchText}>
-          Don't have an account?{" "}
-          <Link to="/register" style={styles.link}>
-            Register here
-          </Link>
+          Remembered your password? <Link to="/login" style={styles.link}>Back to login</Link>
         </p>
       </div>
     </div>
@@ -131,7 +148,21 @@ const styles = {
     cursor: "pointer",
     fontWeight: "bold",
     textDecoration: "underline"
+  },
+  alert: {
+    padding: "12px",
+    borderRadius: "6px",
+    backgroundColor: "#fdecea",
+    color: "#b02a37",
+    border: "1px solid #f5c2c7"
+  },
+  success: {
+    padding: "12px",
+    borderRadius: "6px",
+    backgroundColor: "#e6ffed",
+    color: "#216e39",
+    border: "1px solid #b7eb8f"
   }
 };
 
-export default Login;
+export default ResetPassword;

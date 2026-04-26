@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import { useState, useEffect } from "react";
 import Register from "./components/Register";
 import Login from "./components/Login";
+import ResetPassword from "./components/ResetPassword";
 import Profile from "./components/Profile";
 import Navigation from "./navigation/Navigation";
 
@@ -29,6 +30,7 @@ function App() {
       <Routes>
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route
           path="/profile"
           element={
