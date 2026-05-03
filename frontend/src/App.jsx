@@ -4,6 +4,7 @@ import Register from "./components/Register";
 import Login from "./components/Login";
 import ResetPassword from "./components/ResetPassword";
 import Profile from "./components/Profile";
+import Products from "./components/Products";
 import Navigation from "./navigation/Navigation";
 
 function App() {
@@ -28,14 +29,30 @@ function App() {
     <Router>
       <Navigation token={token} />
       <Routes>
-        <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
+        <Route
+          path="/register"
+          element={token ? <Navigate to="/products" replace /> : <Register />}
+        />
+        <Route
+          path="/login"
+          element={token ? <Navigate to="/products" replace /> : <Login onLoginSuccess={handleLoginSuccess} />}
+        />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route
           path="/profile"
           element={
             token ? (
               <Profile token={token} onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+        <Route
+          path="/products"
+          element={
+            token ? (
+              <Products />
             ) : (
               <Navigate to="/login" replace />
             )

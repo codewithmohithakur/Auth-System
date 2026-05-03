@@ -69,10 +69,6 @@ function Profile({ token, onLogout }) {
               </p>
             </div>
           )}
-
-          <button onClick={logout} style={styles.logoutButton}>
-            Logout
-          </button>
         </div>
       </div>
     </div>

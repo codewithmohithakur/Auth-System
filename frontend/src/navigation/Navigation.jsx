@@ -17,24 +17,36 @@ function Navigation({ token }) {
           </div>
 
           <ul className="nav-links">
-            <li>
-              <Link
-                to="/register"
-                className={`nav-link ${location.pathname === "/register" ? "active" : ""}`}
-              >
-                Register
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/login"
-                className={`nav-link ${location.pathname === "/login" ? "active" : ""}`}
-              >
-                Login
-              </Link>
-            </li>
+            {!token && (
+              <>
+                <li>
+                  <Link
+                    to="/register"
+                    className={`nav-link ${location.pathname === "/register" ? "active" : ""}`}
+                  >
+                    Register
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/login"
+                    className={`nav-link ${location.pathname === "/login" ? "active" : ""}`}
+                  >
+                    Login
+                  </Link>
+                </li>
+              </>
+            )}
             {token && (
               <>
+                <li>
+                  <Link
+                    to="/products"
+                    className={`nav-link ${location.pathname === "/products" ? "active" : ""}`}
+                  >
+                    Products
+                  </Link>
+                </li>
                 <li>
                   <Link
                     to="/profile"

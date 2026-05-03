@@ -16,8 +16,10 @@ function Products() {
     description: "",
     price: "",
     quantity: "",
-    category: ""
+    category: "",
+    image: null
   });
+  const [imagePreview, setImagePreview] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -50,6 +52,15 @@ function Products() {
     });
   };
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0] || null;
+    setFormData({
+      ...formData,
+      image: file
+    });
+    setImagePreview(file ? URL.createObjectURL(file) : "");
+  };
+
   const handleAddProduct = async (e) => {
     e.preventDefault();
 
@@ -67,8 +78,10 @@ function Products() {
           description: "",
           price: "",
           quantity: "",
-          category: ""
+          category: "",
+          image: null
         });
+        setImagePreview("");
 
         setTimeout(() => {
           setSuccess("");
@@ -84,8 +97,10 @@ function Products() {
           description: "",
           price: "",
           quantity: "",
-          category: ""
+          category: "",
+          image: null
         });
+        setImagePreview("");
 
         await fetchProducts();
         navigate("/products");
@@ -105,8 +120,10 @@ function Products() {
       description: product.description,
       price: product.price,
       quantity: product.quantity,
-      category: product.category
+      category: product.category,
+      image: null
     });
+    setImagePreview(product.imageUrl || "");
     setEditingId(product._id);
   };
 
@@ -138,8 +155,10 @@ function Products() {
       description: "",
       price: "",
       quantity: "",
-      category: ""
+      category: "",
+      image: null
     });
+    setImagePreview("");
   };
 
   return (
@@ -178,7 +197,7 @@ function Products() {
 
           <div className="form-row">
             <div className="form-group">
-              <label>Price ($) *</label>
+              <label>Price (₹) *</label>
               <input
                 type="number"
                 name="price"
@@ -217,6 +236,20 @@ function Products() {
             />
           </div>
 
+          <div className="form-group">
+            <label>Product Image</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+            />
+            {imagePreview && (
+              <div className="image-preview-container">
+                <img src={imagePreview} alt="Preview" className="image-preview" />
+              </div>
+            )}
+          </div>
+
           <div className="form-buttons">
             <button
               type="submit"
@@ -251,6 +284,16 @@ function Products() {
           <div className="products-grid">
             {products.map((product) => (
               <div key={product._id} className="product-card">
+                {product.imageUrl ? (
+                  <img
+                    src={`http://localhost:3000${product.imageUrl}`}
+                    alt={product.name}
+                    className="product-image"
+                  />
+                ) : (
+                  <div className="product-image-placeholder">No image</div>
+                )}
+
                 <div className="product-header">
                   <h3>{product.name}</h3>
                   <span className="product-category">{product.category}</span>
@@ -261,7 +304,7 @@ function Products() {
                 <div className="product-details">
                   <div className="detail">
                     <span className="label">Price:</span>
-                    <span className="value">${product.price.toFixed(2)}</span>
+                    <span className="value">₹{product.price.toFixed(2)}</span>
                   </div>
                   <div className="detail">
                     <span className="label">Stock:</span>

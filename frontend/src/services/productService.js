@@ -1,14 +1,26 @@
 const API_URL = "http://localhost:3000";
 
+const createProductFormData = (productData) => {
+  const formData = new FormData();
+  formData.append("name", productData.name);
+  formData.append("description", productData.description);
+  formData.append("price", productData.price);
+  formData.append("quantity", productData.quantity);
+  formData.append("category", productData.category);
+
+  if (productData.image) {
+    formData.append("image", productData.image);
+  }
+
+  return formData;
+};
+
 // ✅ CREATE - Add a new product
 export const createProduct = async (productData) => {
   try {
     const response = await fetch(`${API_URL}/products`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(productData)
+      body: createProductFormData(productData)
     });
 
     const data = await response.json();
@@ -75,10 +87,7 @@ export const updateProduct = async (id, productData) => {
   try {
     const response = await fetch(`${API_URL}/products/${id}`, {
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(productData)
+      body: createProductFormData(productData)
     });
 
     const data = await response.json();
