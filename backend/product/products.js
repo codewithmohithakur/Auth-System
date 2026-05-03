@@ -1,6 +1,28 @@
 const express = require("express");
+const path = require("path");
+const multer = require("multer");
 const router = express.Router();
 const { Product } = require("../utility/database");
+
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, path.join(__dirname, "..", "uploads"));
+    },
+    filename: (req, file, cb) => {
+      const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+      const sanitizedName = file.originalname.replace(/\s+/g, "-");
+      cb(null, `${uniqueSuffix}-${sanitizedName}`);
+    }
+  }),
+  fileFilter: (req, file, cb) => {
+    if (!file.mimetype.startsWith("image/")) {
+      cb(new Error("Only image files are allowed"), false);
+    } else {
+      cb(null, true);
+    }
+  }
+});
 
 // Middleware to verify token (optional, can be added for authentication)
 const verifyToken = (req, res, next) => {
@@ -12,7 +34,7 @@ const verifyToken = (req, res, next) => {
 };
 
 // ✅ CREATE - Add a new product
-router.post("/products", async (req, res) => {
+router.post("/products", upload.single("image"), async (req, res) => {
   try {
     const { name, description, price, quantity, category } = req.body;
 
@@ -20,12 +42,15 @@ router.post("/products", async (req, res) => {
       return res.status(400).json({ message: "All fields required" });
     }
 
+    const imageUrl = req.file ? `/uploads/${req.file.filename}` : "";
+
     const newProduct = new Product({
       name,
       description,
       price,
       quantity,
-      category
+      category,
+      imageUrl
     });
 
     await newProduct.save();
@@ -80,25 +105,31 @@ router.get("/products/:id", async (req, res) => {
 });
 
 // ✅ UPDATE - Edit a product
-router.put("/products/:id", async (req, res) => {
+router.put("/products/:id", upload.single("image"), async (req, res) => {
   try {
     const { id } = req.params;
     const { name, description, price, quantity, category } = req.body;
 
-    if (!name || !description || !price === undefined || !quantity === undefined || !category) {
+    if (!name || !description || !price || !quantity || !category) {
       return res.status(400).json({ message: "All fields required" });
+    }
+
+    const updates = {
+      name,
+      description,
+      price,
+      quantity,
+      category,
+      updatedAt: Date.now()
+    };
+
+    if (req.file) {
+      updates.imageUrl = `/uploads/${req.file.filename}`;
     }
 
     const updatedProduct = await Product.findByIdAndUpdate(
       id,
-      {
-        name,
-        description,
-        price,
-        quantity,
-        category,
-        updatedAt: Date.now()
-      },
+      updates,
       { new: true }
     );
 
